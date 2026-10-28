@@ -1,0 +1,14 @@
+# SAGA 3D Phase 4 - pinned Python dependencies (install into .venv).
+# Version discipline: the Phase 1-3 requirements.lock.txt is the source of truth for HOST modules;
+# the adapter pins the same versions so one venv runs the combined app.
+fastapi==0.143.1          # REST routes + /ws/sensor + /ws/world (typed WebSocket parameter REQUIRED)
+starlette==1.10.0         # ASGI framework under fastapi
+uvicorn==0.54.0           # ASGI server (same port serves sensor host and Godot world socket)
+websockets==17.2          # WebSocket client used by tests / debugging (uvicorn uses its own ws stack)
+pydantic==2.14.1          # Phase 1-3 message models (FusionResult, sensor protocol envelopes)
+PyYAML==6.0.3             # config/app.yaml + config/world.yaml
+numpy==2.5.4              # fusion math (Phase 1-3 modules)
+opencv-python-headless==4.14.0.94  # calibration/undistort helpers (Phase 1-3 modules)
+httpx==0.28.1             # test harness (e2e fixture health polling)
+pytest==9.1.1
+pytest-timeout==2.4.0

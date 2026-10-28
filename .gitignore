@@ -1,0 +1,11 @@
+# Phase 4 workspace ignores
+.venv/
+logs/
+calibration/
+__pycache__/
+*.pyc
+.pytest_cache/
+.godot/
+*.import
+.env
+!/.env.example
