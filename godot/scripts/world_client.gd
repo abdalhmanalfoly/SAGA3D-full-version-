@@ -97,6 +97,8 @@ func _start_connect() -> void:
 func _process(delta: float) -> void:
 	if session_id == "" or _regime == "CLOSED":
 		return
+	_peer.poll()                                      # REQUIRED every frame in Godot 4.x: the WebSocketPeer
+	                                                  # state machine (incl. the HTTP handshake) only advances in poll()
 	var rs: int = _peer.get_ready_state()
 	if rs == WebSocketPeer.STATE_OPEN:
 		_poll_messages()
