@@ -1,7 +1,7 @@
-"""Bridged access to the READ-ONLY Phase 1-3 pure modules (imported, never copied or modified).
+"""Bridged access to the CONSOLIDATED Phase 1-3 pure modules (host tree inside this repository).
 
 These modules are stdlib-only (no pydantic/fastapi), so they can load without installing the host
-dependencies — exactly as Phase 3 found them. The heavier host imports happen in attach.py.
+dependencies. The heavier host imports happen in attach.py.
 """
 from __future__ import annotations
 
@@ -9,14 +9,14 @@ import dataclasses
 import sys
 from pathlib import Path
 
-from .config import phase3_root
+from .config import host_root
 
 
 class P3:
-    """Loaded-once facade over the Phase 1-3 sources of truth."""
+    """Loaded-once facade over the consolidated Phase 1-3 sources of truth."""
 
     def __init__(self, root: Path | None = None):
-        root = root or phase3_root()
+        root = root or host_root()
         if str(root) not in sys.path:
             sys.path.insert(0, str(root))
         from host.app.gesture import agent as gesture_agent
@@ -42,7 +42,7 @@ class P3:
 
     # ------------------------------------------------------------------ config
     def gesture_cfg_with(self, overrides: dict):
-        """Phase 3 default config (config/gesture.yaml, READ-ONLY) + the documented world-adapter overrides.
+        """Phase 3 default config (config/gesture.yaml in this repository) + the documented world-adapter overrides.
 
         Only the handshake fields may be overridden (require_adapter_ack / ack timeouts / release ack);
         perception thresholds are never silently changed by the world adapter."""

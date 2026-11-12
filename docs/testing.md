@@ -1,14 +1,16 @@
 # Testing: what is verified and how to re-run it
 
-All commands assume the Phase 4 venv and the Phase 1-3 checkout at `SAGA3_ROOT`:
+All commands run from THIS repository (consolidated; no external checkout involved):
 
 ```bat
 cd "D:\collega active\phases\saga-3d-phase-4"
-set "SAGA3_ROOT=D:\collega active\phases\saga-3d phase 3"
-.venv\Scripts\python -m pytest tests -q
+.venv\Scripts\python -m pytest            -q   :: adapter tests + host tests (411 total)
+.venv\Scripts\python -m pytest tests      -q   :: adapter tests only (54 total)
+.venv\Scripts\python -m pytest host\tests -q   :: host tests only (357 total)
 ```
 
-Current status: **54 passed** (50 unit + 4 e2e), 0 failed, ~10 s wall clock.
+Adapter status: **54 passed** (50 unit + 4 e2e), 0 failed, ~10 s wall clock.
+Consolidated host suite: **357 passed**, 0 failed (pytest.ini runs both suites by default).
 
 ## Suite layout
 
@@ -58,12 +60,13 @@ for each script:  --headless --path godot --check-only --script scripts/<name>.g
 
 Both are currently parse/dependency-clean on Godot 4.3-stable.
 
-## Phase 1-3 regression (contract: upstream stays untouched)
+## Consolidated host regression (now part of THIS repository)
 
 ```bat
-"D:\collega active\phases\saga-3d-phase-4\.venv\Scripts\python" -B -m pytest host/tests -q ^
-  -p no:cacheprovider
-cd "D:\collega active\phases\saga-3d phase 3" && git status --porcelain
+.venv\Scripts\python -m pytest host\tests -q
+(cd sensor-client && node --test tests/*.test.mjs)    :: browser-logic tests (16)
 ```
 
-The status output must stay EMPTY after any Phase 4 session — byte-identical upstream.
+The old phase repositories are no longer referenced at runtime; there is no upstream
+working tree to keep byte-identical anymore. Historical references remain untouched at
+`..\saga-3d phase 1|2|3`.

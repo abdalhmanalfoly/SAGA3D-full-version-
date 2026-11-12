@@ -1,14 +1,15 @@
-# Architecture: Phase 4 in one page
+# Architecture: the consolidated SAGA 3D workspace in one page
 
 ```
-            Phases 1-3 repo  (READ-ONLY, imported; never edited)
+            Consolidated host tree (host/ INSIDE this repository)
    +-------------------------------------------------------------+
    | host.app.main:create_app -> FastAPI                          |
-   |   /api/*  REST      /ws/sensor  cameras (Phase 1-3 protocol)  |
+   |   /client/  sensor client static mount (sensor-client/)      |
+   |   /api/*  REST      /ws/sensor  cameras (sensor protocol 1.0) |
    |   SessionManager -> sessions -> fusion engine -> GestureAgent |
-   |   SessionCoordination (Phase 3 host_adapter) per session      |
+   |   SessionCoordination (host_adapter) per session              |
    +-------------------------------------------------------------+
-                ^ imported via SAGA3_ROOT (attach.py adds its path)
+                ^ imported locally (REPO_ROOT on sys.path; no SAGA3_ROOT)
                 |
    +------------+-------------------------------------------------+
    | saga4_world (Phase 4 workspace, this repo)                    |
@@ -29,7 +30,7 @@
    |  protocol.py      strict wire validation BOTH directions       |
    |  transform.py     WorldTransform: the ONE rig->Godot mapping   |
    |  status.py        derived host state (TRUST states, not blind) |
-   |  config.py        config/world.yaml + env (SAGA3_ROOT etc.)    |
+   |  config.py        config/world.yaml + env (bind endpoint etc.)   |
    |  p3.py            contract symbols from Phases 1-3 (GestureAgent,  |
    |                   HandSample, InteractionObject, SessionCoordination) |
    |                   imports; attach.py additionally imports host.app  |

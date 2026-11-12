@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SAGA 3D Phase 4 launcher: host (Phases 1-3, READ-ONLY) + world adapter + /ws/world for Godot.
+"""SAGA 3D Phase 4 launcher: consolidated host (Phases 1-3) + world adapter + /ws/world for Godot.
 
 Usage:
     .venv/Scripts/python scripts/run_host.py [--host HOST] [--port PORT]
@@ -7,13 +7,16 @@ Usage:
                                              [--skip-generate-session]
 
 Environment (see .env.example):
-    SAGA3_ROOT          path of the Phases 1-3 repository (default: ../saga-3d phase 3)
-    SAGA_LOG_DIR        runtime log output (default: <phase4>/logs; NEVER defaults into Phase 1-3)
-    SAGA_CALIBRATION_DIR calibration files (default: <phase4>/calibration; NEVER defaults into Phase 1-3)
+    SAGA_HOST / SAGA_PORT bind address (defaults: config/app.yaml + config/world.yaml endpoint)
+    SAGA_LOG_DIR        runtime log output (default: <repo>/logs)
+    SAGA_CALIBRATION_DIR calibration files (default: <repo>/calibration)
+
+The whole implementation (sensor client, host, fusion, gesture, world adapter) lives in THIS
+repository; no external repository or SAGA3_ROOT is referenced.
 
 After startup:
     * REST   http://127.0.0.1:8765/api/health, /api/sessions, ...
-    * WS     ws://127.0.0.1:8765/ws/sensor  (Phases 1-3 sensor protocol, unchanged)
+    * WS     ws://127.0.0.1:8765/ws/sensor  (sensor protocol, unchanged)
     * WS     ws://127.0.0.1:8765/ws/world   (Godot: WORLD_HELLO -> events, see docs/world_protocol.md)
 Godot is started separately (see docs/setup.md); it connects as a world client per session.
 """
@@ -36,7 +39,10 @@ def main() -> int:
                         help="do NOT auto-create any session; sessions are made via POST /api/sessions")
     args = parser.parse_args()
 
-    sys.path.insert(0, str(REPO_ROOT / "adapter"))
+    # REPO_ROOT makes the consolidated host package (host/) importable; adapter/ makes saga4_world importable.
+    for p in (str(REPO_ROOT), str(REPO_ROOT / "adapter")):
+        if p not in sys.path:
+            sys.path.insert(0, p)
     from saga4_world.attach import create_phase4_app     # noqa: E402 (path set above)
     from saga4_world.config import load_world_config     # noqa: E402
 

@@ -11,8 +11,7 @@ import yaml
 
 from .transform import WorldTransform, TransformError
 
-REPO_ROOT = Path(__file__).resolve().parents[2]              # saga-3d-phase-4/
-PHASE3_ROOT_DEFAULT = REPO_ROOT.parent / "saga-3d phase 3"   # the read-only Phases 1-3 repository
+REPO_ROOT = Path(__file__).resolve().parents[2]              # saga-3d-phase-4/ (the CONSOLIDATED main workspace)
 
 
 class WorldConfigError(ValueError):
@@ -85,15 +84,13 @@ def load_world_config(path: Path | str | None = None) -> WorldConfig:
     )
 
 
-def phase3_root(env: Mapping[str, str] | None = None) -> Path:
-    """Location of the READ-ONLY Phases 1-3 repository (imported, never copied). Overridable via SAGA3_ROOT."""
-    env = env if env is not None else os.environ
-    raw = env.get("SAGA3_ROOT", "")
-    if raw:
-        p = Path(raw)
-        if not (p / "host" / "app" / "main.py").is_file():
-            raise WorldConfigError(f"SAGA3_ROOT={p} does not look like the_PHASE_1-3 repository (no host/app/main.py)")
-        return p
-    if not (PHASE3_ROOT_DEFAULT / "host" / "app" / "main.py").is_file():
-        raise WorldConfigError(f"Phases 1-3 repository not found at {PHASE3_ROOT_DEFAULT}. Set SAGA3_ROOT to its path.")
-    return PHASE3_ROOT_DEFAULT
+def host_root(env: Mapping[str, str] | None = None) -> Path:
+    """Root of the CONSOLIDATED host tree.
+
+    Since the consolidation, the Phase 1-3 implementation lives INSIDE this repository (``host/``),
+    and no external repository (no ``SAGA3_ROOT``) is referenced at runtime. The check simply guards
+    against a broken checkout."""
+    root = REPO_ROOT
+    if not (root / "host" / "app" / "main.py").is_file():
+        raise WorldConfigError(f"consolidated host tree not found at {root} (expected host/app/main.py)")
+    return root

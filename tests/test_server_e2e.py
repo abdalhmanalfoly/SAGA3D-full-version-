@@ -33,9 +33,9 @@ def saga_server(tmp_path):
     for candidate in (str(REPO / "adapter"),):
         if candidate not in sys.path:
             sys.path.insert(0, candidate)
-    os.environ["SAGA3_ROOT"] = str(REPO.parent / "saga-3d phase 3")
     os.environ["SAGA_LOG_DIR"] = str(tmp_path / "logs")
     os.environ["SAGA_CALIBRATION_DIR"] = str(tmp_path / "calibration")
+    # NOTE (consolidation): the host tree now lives inside this repository (host/); no SAGA3_ROOT is set or needed.
     from saga4_world.attach import create_phase4_app
 
     app = create_phase4_app()
@@ -60,7 +60,7 @@ def saga_server(tmp_path):
     finally:
         server.should_exit = True
         thread.join(5)
-        for k in ("SAGA3_ROOT", "SAGA_LOG_DIR", "SAGA_CALIBRATION_DIR"):
+        for k in ("SAGA_LOG_DIR", "SAGA_CALIBRATION_DIR"):
             os.environ.pop(k, None)
 
 

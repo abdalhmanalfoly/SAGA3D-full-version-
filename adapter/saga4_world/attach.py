@@ -1,12 +1,12 @@
-"""Phase 4 launcher glue: builds the COMPLETE Phase 1-3 host app + the world adapter in ONE process.
+"""Phase 4 launcher glue: builds the COMPLETE consolidated host app (Phases 1-3) + the world adapter in ONE process.
 
-Runtime wiring only — the Phase 1-3 repository stays READ-ONLY:
+Runtime wiring only — the host tree lives INSIDE this repository (``host/``):
   * ``host.app.main:create_app`` supplies the sensor HTTP/WS routes, registry, session manager and fusion.
   * A ``/ws/world`` WebSocket route for Godot and a ~20 Hz tick task are ADDED here.
   * ``SessionManager.create_session`` / ``stop_session`` are wrapped (monkey-patched on the live instance,
     never a source edit) so every live session also gets a ``SessionWorld`` bridge and, when available, the
     Phase 3 ``SessionCoordination`` adapter (the Phase 3 handoff §5.2 explicitly defers that wiring here).
-  * Runtime writes stay OUT of the Phase 1-3 tree: SAGA_LOG_DIR / SAGA_CALIBRATION_DIR default into the
+  * Runtime writes stay out of the host tree's own defaults: SAGA_LOG_DIR / SAGA_CALIBRATION_DIR default into the
     Phase 4 directory unless explicitly configured otherwise (see .env.example).
 """
 from __future__ import annotations
@@ -23,7 +23,7 @@ from typing import Any
 from fastapi import WebSocket
 
 from .bridge import SessionWorld
-from .config import WorldConfig, load_world_config, phase3_root
+from .config import WorldConfig, load_world_config, host_root
 from .protocol import WORLD_PROTOCOL_VERSION
 from .server import WorldSocketSession
 
@@ -31,8 +31,11 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _import_p3_host():
-    """Import the READ-ONLY Phase 1-3 host modules after adding its repository root to sys.path."""
-    root = phase3_root()
+    """Import the consolidated host modules (this repository's ``host/`` tree).
+
+    REPO_ROOT is added to sys.path idempotently so the app is importable even when uvicorn
+    resolves this module by file path from a different working directory."""
+    root = host_root()
     if str(root) not in sys.path:
         sys.path.insert(0, str(root))
     try:
@@ -41,7 +44,7 @@ def _import_p3_host():
         return create_app, load_settings, root
     except ImportError as exc:                                     # most likely a missing pip dependency
         raise RuntimeError(
-            f"cannot import the Phase 1-3 host from {root}: {exc}. "
+            f"cannot import the consolidated host package from {root}: {exc}. "
             "Install the pinned dependencies into the Phase 4 venv first "
             "(.venv/Scripts/python -m pip install -r requirements.txt)") from exc
 

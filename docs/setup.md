@@ -1,13 +1,16 @@
-# Setup: running the Phase 4 world demo (Windows instructions, generalises elsewhere)
+# Setup: running the SAGA 3D consolidated workspace (Windows instructions, generalises elsewhere)
 
 ## Prerequisites
 
-* Python 3.12 (the venv used during development was 3.12; Phase 1-3 host requirements apply).
-* The READ-ONLY Phases 1-3 repository next to this one: `../saga-3d phase 3/` (do not
-  modify it; the adapter only ever reads/imports from it).
+* Python 3.12 (the venv used during development was 3.12; host requirements apply).
+* Node.js (any recent version; used ONLY to run the browser-logic unit tests — the sensor
+  client itself has no build step and no npm dependencies).
 * Godot 4.3 (opened the project under `godot/` at least once with the standard editor).
 * A second machine is fine (the host binds `127.0.0.1` by default; relax
   `config/world.yaml endpoint.host` deliberately if you really want LAN).
+* The whole implementation (sensor client, host, adapter) lives in THIS repository.
+  The old phase repositories (`saga-3d phase 1/2/3`) are historical references only
+  and are NOT needed at runtime.
 
 ## 1. Install the Python venv
 
@@ -18,11 +21,23 @@ cd "D:\collega active\phases\saga-3d-phase-4"
 
 (If `.venv` does not exist yet, create it first: `python -m venv .venv`.)
 
+## 1b. Fetch the MediaPipe browser assets (one-time)
+
+The sensor client loads MediaPipe Tasks-Vision (WASM + hand-landmarker model) LOCALLY —
+never from a CDN. The binaries are git-ignored (size + licensing) and fetched once by:
+
+```bash
+bash scripts/fetch_assets.sh        # requires node/npm + network access, pinned version 1.1.1
+```
+
+(The assets were consolidated from the Phase 1 checkout; if `sensor-client/vendor/` already
+exists, the script verifies and keeps it. Verify the model hash: `sensor-client/vendor/models/hand_landmarker.task.sha256`.)
+
 ## 2. Configure
 
-Copy `.env.example` to `.env` and adjust `SAGA3_ROOT` if your Phases 1-3 checkout lives
-somewhere else. All thresholds live in `config/world.yaml`; the coordinate transform is
-documented in `docs/coordinates.md`.
+Copy `.env.example` to `.env`. There is NO `SAGA3_ROOT` anymore — the host tree is
+`host/` inside this repository. All thresholds live in `config/world.yaml`; the coordinate
+transform is documented in `docs/coordinates.md`.
 
 ## 3. Start the combined host
 
@@ -31,12 +46,13 @@ documented in `docs/coordinates.md`.
 ```
 
 Now serving on http://127.0.0.1:8765:
-* `/api/health`, `/api/sessions`, ... (Phase 1-3 REST, unchanged)
-* `/ws/sensor` — sensor protocol for real WebSpace Python cameras (Phase 1-3, unchanged)
-* `/ws/world` — the Godot world socket (this phase, unit per-world docs/world_protocol.md)
+* `/client/` — the browser sensor client (camera + MediaPipe landmarks; served locally)
+* `/api/health`, `/api/sessions`, `/api/client-config`, ... (host REST, unchanged)
+* `/ws/sensor` — sensor protocol for real cameras (Phase 1, unchanged)
+* `/ws/world` — the Godot world socket (see docs/world_protocol.md)
 
-Runtime outputs (logs, calibration) are written under `logs/` and `calibration/` **inside
-the Phase 4 tree** — never inside the read-only repository.
+Runtime outputs (logs, calibration) are written under `logs/` and `calibration/` inside
+this repository.
 
 ## 4. Start Godot
 
@@ -58,7 +74,10 @@ Sessions created through the REST API with NO registered sensors show
 `WAITING_FOR_SENSORS`, then (correctly) `CALIBRATION_REQUIRED`; interaction stays inhibited
 by design (tests/test_bridge.py covers this safe-stop). Real sensors plus a real calibration
 move the state machine forward — that full path is NOT yet exercised on physical hardware
-(see PHASE4_IMPLEMENTATION_REPORT.md).
+(see PHASE4_IMPLEMENTATION_REPORT.md and the migration report). A fully SYNTHETIC end-to-end
+check of the fusion path runs from this repository with:
+`SAGA_CALIBRATION_DIR=calibration/example_synthetic SAGA_ALLOW_SYNTHETIC_CALIBRATION=1` and
+`scripts/e2e_fusion_live.py` (see docs/testing.md).
 
 ## 6. Heartbeat and reconnection
 

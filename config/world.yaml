@@ -1,5 +1,5 @@
 # SAGA 3D Phase 4 — Godot world adapter configuration.
-# Referenced implementation (Phases 1-3, READ-ONLY): ../saga-3d phase 3/
+# The consolidated Phases 1-3 implementation lives INSIDE this repository (host/).
 # Every threshold below is a starting point; none is validated on physical hardware yet.
 
 world_protocol_version: "1.0"        # must match host/app/gesture/events.py PROTOCOL_VERSION in Phases 1-3

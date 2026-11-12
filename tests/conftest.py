@@ -1,7 +1,8 @@
 """Shared fixtures for the Phase 4 world-adapter tests.
 
-The Phase 1-3 code is used READ-ONLY: we import its gesture modules and build REAL pydantic
-``FusionResult`` objects (the actual Phase 2 contract) instead of mocks where practical.
+The consolidated host code (Phases 1-3, ``host/`` inside this repository) is imported directly:
+we build REAL pydantic ``FusionResult`` objects (the actual Phase 2 contract) instead of mocks
+where practical.
 """
 import sys
 import time
@@ -13,7 +14,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ADAPTER = REPO_ROOT / "adapter"
-for p in (str(ADAPTER),):
+for p in (str(REPO_ROOT), str(ADAPTER)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
